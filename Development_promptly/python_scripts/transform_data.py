@@ -3,7 +3,7 @@ import json
 import hashlib
 import logging
 
-from config import DB_CONFIG
+from db_utils import get_connection 
 
 class TransformAndInsertData:
     """
@@ -12,18 +12,6 @@ class TransformAndInsertData:
 
     # Logging configuration
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-
-
-    def get_connection(self):
-        """
-        Establishes a connection to the PostgreSQL database.
-        """
-        try:
-            conn = psycopg2.connect(**DB_CONFIG)
-            return conn
-        except Exception as e:
-            logging.error(f"Error connecting to the database: {e}")
-            raise
 
 
     def generate_id(self, first_name, last_name, birth_date):
@@ -72,12 +60,11 @@ class TransformAndInsertData:
         return transformed_data
 
 
-    def insert_transformed_data(self, transformed_data):
+    def insert_transformed_data(self, transformed_data, conn):
         """
         Inserts transformed data into the 'fhir_patient' table.
         """
         try:
-            conn = self.get_connection()
             insert_query = """
                 INSERT INTO fhir_patient (id, full_name, birth_date, gender, address, telecom, marital_status, insurance_number, nationality)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -101,10 +88,10 @@ class TransformAndInsertData:
         Orchestrates the transformation and insertion process.
         """
         try:
-            conn = self.get_connection()
+            conn = get_connection()
             raw_data = self.get_raw_data(conn)
             transformed_data = self.transform_data(raw_data)
-            self.insert_transformed_data(transformed_data)
+            self.insert_transformed_data(transformed_data, conn)
 
         except Exception as e:
             logging.error(f"Error in transformation and insertion process: {e}")

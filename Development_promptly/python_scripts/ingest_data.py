@@ -3,11 +3,11 @@ import psycopg2
 import logging
 import argparse
 import numpy as np
+import re
 
 from psycopg2.extras import execute_values
 
-from config import DB_CONFIG
-
+from db_utils import get_connection
 
 class IngestData:
     """
@@ -17,17 +17,21 @@ class IngestData:
     # Logging configuration
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-    def get_connection(self):
+    def email_validation(self, email):
         """
-        Establishes a connection to the PostgreSQL database.
+        validate email format using regex.
         """
-        try:
-            conn = psycopg2.connect(**DB_CONFIG)
-            return conn
-        except Exception as e:
-            logging.error(f"Error connecting to the database: {e}")
-            raise
-    
+
+        if isinstance(email, str):
+            regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+            if re.match(regex, email):
+                return email
+            else:
+                return None
+        else:
+            return None
+
+
     def handle_missing_data(self, df):
         """
         Handles missing data in the CSV by filling missing birth_date and address fields 
@@ -40,14 +44,17 @@ class IngestData:
         df['address'] = df['address'].fillna('Not Provided')
         df['blood_type'] = df['blood_type'].apply(lambda x: x if x in valid_blood_types else np.nan)
         df['state'] = df['state'].apply(lambda x: None if pd.isnull(x) or (len(str(x)) > 2) else x)
+        df['email'] = df['email'].apply(self.email_validation)
 
         return df
+
 
     def insert_data(self, df):
         """
         Inserts the data into the 'raw_patient' table in the database using bulk insert for efficiency.
         """
-        conn = self.get_connection()
+
+        conn = get_connection()
         cursor = conn.cursor()
 
         # Prepare data for bulk insertion
@@ -81,11 +88,30 @@ class IngestData:
         cursor.close()
         conn.close()
 
+    def validate_csv(self, csv_file):
+        """
+        validate if csv file have a correct extension and correct format
+        """
+
+        if not csv_file.lower().endswith('.csv'):
+            raise ValueError("The file must have a .csv extension.")
+
+        try:
+            df = pd.read_csv("source_files/" + csv_file)
+            
+            if df.empty or len(df) > 1:
+                raise ValueError("The CSV file is empty or does not have a valid header.")
+            else:
+                return df
+        except Exception as e:
+            raise ValueError(f"Error reading the CSV file: {e}")
+
 
     def ingest_data(self, csv_file):
         """
         Reads a CSV file, handles missing data, and prints its contents.
         """
+
         logging.info(f"Data ingestion initiated from file: {csv_file}")
 
         try:
@@ -104,12 +130,11 @@ class IngestData:
             
     
 if __name__ == "__main__":
-    # Configure argparse to accept a --file argument
+
     parser = argparse.ArgumentParser(description="Patient data ingestion into the database.")
     parser.add_argument("--file", required=True, help="Name CSV file to be ingested.")
-
+    
     args = parser.parse_args()
 
-    # Create an instance of the IngestData class and execute data ingestion
     ingestor = IngestData()
     ingestor.ingest_data(args.file)
