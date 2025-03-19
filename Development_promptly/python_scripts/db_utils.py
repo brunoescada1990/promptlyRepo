@@ -20,7 +20,6 @@ def get_connection():
     Establishes a connection to the PostgreSQL database.
     """
     
-    # Logging configuration
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
     try:

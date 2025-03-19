@@ -34,8 +34,9 @@ class IngestData:
 
     def handle_missing_data(self, df):
         """
-        Handles missing data in the CSV by filling missing birth_date and address fields 
-        and validate if blood_type column have a correct value.
+        Handles missing data in the CSV by filling missing birth_date, address and state fields, 
+        validate if blood_type column have a correct value
+        and validate email.
         """
 
         valid_blood_types = ['A-', 'A+', 'O-', 'O+', 'B-', 'B+', 'AB-', 'AB+']
@@ -57,7 +58,6 @@ class IngestData:
         conn = get_connection()
         cursor = conn.cursor()
 
-        # Prepare data for bulk insertion
         data_to_insert = [
             (
                 row['first_name'], row['last_name'], row['birth_date'], row['gender'], row['address'],
@@ -70,7 +70,7 @@ class IngestData:
         ]
 
         try:
-            # Bulk insert using execute_values
+
             insert_query = """
                 INSERT INTO raw_patient (first_name, last_name, birth_date, gender, address, city, state, zip_code, 
                                          phone_number, email, emergency_contact_name, emergency_contact_phone, 
@@ -117,10 +117,8 @@ class IngestData:
         try:
             df = pd.read_csv("source_files/" + csv_file)
 
-            # Handle missing data by calling the instance method
             df = self.handle_missing_data(df)
 
-            # Insert data:
             self.insert_data(df)
 
             logging.info(f"Data ingestion completed successfully.")

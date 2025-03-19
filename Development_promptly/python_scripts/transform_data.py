@@ -10,7 +10,6 @@ class TransformAndInsertData:
     This class is responsible for read table 'raw_patient' transform data and insert in table 'fhir_patient'.
     """
 
-    # Logging configuration
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
@@ -47,6 +46,7 @@ class TransformAndInsertData:
         """
         Transforms raw patient data into the FHIR format.
         """
+
         transformed_data = []
         for patient in raw_data:
             first_name, last_name, birth_date, gender, address, phone, email, marital_status, insurance_number, nationality = patient
@@ -64,6 +64,7 @@ class TransformAndInsertData:
         """
         Inserts transformed data into the 'fhir_patient' table.
         """
+
         try:
             insert_query = """
                 INSERT INTO fhir_patient (id, full_name, birth_date, gender, address, telecom, marital_status, insurance_number, nationality)
@@ -87,6 +88,7 @@ class TransformAndInsertData:
         """
         Orchestrates the transformation and insertion process.
         """
+        
         try:
             conn = get_connection()
             raw_data = self.get_raw_data(conn)
