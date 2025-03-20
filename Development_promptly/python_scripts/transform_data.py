@@ -53,7 +53,7 @@ class TransformAndInsertData:
 
             fhir_id = self.generate_id(first_name, last_name, birth_date)
             full_name = f"{first_name} {last_name}"
-            telecom = json.dumps({"phone": phone, "email": email})  # JSON válido
+            telecom = json.dumps({"phone": phone, "email": email})
 
             transformed_data.append((fhir_id, full_name, birth_date, gender, address, telecom, marital_status, insurance_number, nationality))
 

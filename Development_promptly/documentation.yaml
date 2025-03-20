@@ -1,0 +1,116 @@
+models:
+  - name: raw_patient
+    description: |
+      The `raw_patient` table stores raw patient data, including personal information, emergency contact details, blood type, insurance data, and more.
+      This data is initially loaded from CSV files and may be processed later for transformation and insertion into other tables.
+    columns:
+      - name: id
+        description: A unique identifier automatically generated for each patient.
+        data_type: integer
+        tests:
+          - unique
+          - not_null
+      - name: first_name
+        description: The patient's first name.
+        data_type: string
+        tests:
+          - not_null
+      - name: last_name
+        description: The patient's last name.
+        data_type: string
+        tests:
+          - not_null
+      - name: birth_date
+        description: The patient's birth date.
+        data_type: date
+        tests:
+          - not_null
+      - name: gender
+        description: The patient's gender.
+        data_type: string
+        tests:
+          - not_null
+      - name: address
+        description: The patient's home address.
+        data_type: string
+      - name: city
+        description: The city where the patient lives.
+        data_type: string
+      - name: state
+        description: The state where the patient lives, limited to 2 characters.
+        data_type: string
+      - name: zip_code
+        description: The patient's postal code.
+      - name: phone_number
+        description: The patient's phone number.
+      - name: email
+        description: The patient's email address.
+        data_type: string
+        tests:
+          - valid_email_format: true
+      - name: emergency_contact_name
+        description: The name of the patient's emergency contact.
+      - name: emergency_contact_phone
+        description: The phone number of the patient's emergency contact.
+      - name: blood_type
+        description: The patient's blood type, validated to be a known blood type.
+        data_type: string
+        tests:
+          - accepted_values:
+              values: ['A-', 'A+', 'O-', 'O+', 'B-', 'B+', 'AB-', 'AB+']
+      - name: insurance_provider
+        description: The patient's insurance provider.
+        data_type: string
+      - name: insurance_number
+        description: The patient's insurance number.
+        data_type: string
+      - name: marital_status
+        description: The patient's marital status.
+        data_type: string
+      - name: preferred_language
+        description: The patient's preferred language.
+        data_type: string
+      - name: nationality
+        description: The patient's nationality.
+        data_type: string
+      - name: allergies
+        description: A list of the patient's allergies.
+        data_type: string
+      - name: last_visit_date
+        description: The date of the patient's last visit.
+        data_type: date
+      - name: created_at
+        description: The timestamp when the record was created.
+        data_type: timestamp
+      - name: updated_at
+        description: The timestamp when the record was last updated.
+        data_type: timestamp
+  - name: fhir_patient
+    description: |
+      The `fhir_patient` table stores transformed patient data in the FHIR (Fast Healthcare Interoperability Resources) format.
+      It includes the same core patient information as the `raw_patient` table, but in a format suitable for healthcare interoperability and integration with FHIR-based systems.
+    columns:
+      - name: id
+        description: A unique identifier for the patient, generated based on first name, last name, and birth date.
+        tests:
+          - unique
+          - not_null
+      - name: full_name
+        description: The full name of the patient, combining first and last name.
+      - name: birth_date
+        description: The patient's birth date.
+      - name: gender
+        description: The patient's gender.
+      - name: address
+        description: The patient's home address.
+      - name: telecom
+        description: A JSON object containing the patient's phone number and email address.
+        tests:
+          - not_null
+      - name: marital_status
+        description: The patient's marital status.
+      - name: insurance_number
+        description: The patient's insurance number.
+      - name: nationality
+        description: The patient's nationality.
+   
